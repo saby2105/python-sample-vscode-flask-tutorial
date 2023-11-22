@@ -2,30 +2,28 @@ trigger:
 - main
 
 pool:
-  vmImage: 'ubuntu-latest'
+  vmImage: ubuntu-latest
+strategy:
+  matrix:
+    Python38:
+      python.version: '3.8'
+    Python39:
+      python.version: '3.9'
+    Python310:
+      python.version: '3.10'
 
-jobs:
-- job: RunTests
-  strategy:
-    matrix:
-      Python27:
-        python_version: '2.7'
-      Python35:
-        python_version: '3.5'
-      Python36:
-        python_version: '3.6'
-      Python37:
-        python_version: '3.7'
+steps:
+- task: UsePythonVersion@0
+  inputs:
+    versionSpec: '$(python.version)'
+  displayName: 'Use Python $(python.version)'
 
-  steps:
-  - task: UsePythonVersion@0
-    inputs:
-      versionSpec: '$(python_version)'
-    displayName: 'Use Python $(python_version)'
+- script: |
+    python -m pip install --upgrade pip
+    pip install -r requirements.txt
+  displayName: 'Install dependencies'
 
-  - script: |
-      python -m pip install --upgrade pip
-      pip install -r requirements.txt
-      pip install pytest
-      pytest
-    displayName: 'Run pytest'
+- script: |
+    pip install pytest pytest-azurepipelines
+    pytest
+  displayName: 'pytest'
